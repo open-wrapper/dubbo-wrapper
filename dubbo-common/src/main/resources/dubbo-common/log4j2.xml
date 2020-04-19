@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="warn">
+
+    <appenders>
+        <RollingFile name="zk-cli-appender" fileName="${sys:dubbo.log.root}/zk-cli.log"
+                     filePattern="${sys:dubbo.log.root}/zk-cli.log.%d{yyyy-MM-dd}-%i">
+            <Filters>
+                <ThresholdFilter level="info"/>
+            </Filters>
+            <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss:SSS} %p [%t] %c{1} ${ctx:traceId} %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="400 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+
+
+        <RollingFile name="dubbo-appender" fileName="${sys:dubbo.log.root}/dubbo.log"
+                     filePattern="${sys:dubbo.log.root}/dubbo.log.%d{yyyy-MM-dd}-%i">
+            <Filters>
+                <ThresholdFilter level="warn"/>
+            </Filters>
+            <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss:SSS} %p [%t] %c{2} %X{traceId:--} %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="400 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+
+    </appenders>
+
+    <loggers>
+        <logger name="com.wrapper.dubbo.common.utils.DubboLogger" level="warn" additivity="false">
+            <appender-ref ref="dubbo-appender"/>
+        </logger>
+
+        <!--zk-->
+        <logger name="org.apache.zookeeper" level="info" additivity="false">
+            <appender-ref ref="zk-cli-appender"/>
+        </logger>
+        <logger name="org.I0Itec.zkclient" level="info" additivity="false">
+            <appender-ref ref="zk-cli-appender"/>
+        </logger>
+        <logger name="com.netflix.curator.framework" level="info" additivity="false">
+            <appender-ref ref="zk-cli-appender"/>
+        </logger>
+
+
+    </loggers>
+
+</configuration>

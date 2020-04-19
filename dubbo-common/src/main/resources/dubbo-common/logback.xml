@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For assistance related to logback-translator or configuration -->
+<!-- files in general, please contact the logback user mailing list -->
+<!-- at http://www.qos.ch/mailman/listinfo/logback-user -->
+<!-- -->
+<!-- For professional support please see -->
+<!-- http://www.qos.ch/shop/products/professionalSupport -->
+<!-- -->
+<configuration>
+
+    <!--
+        ZK的日志
+    -->
+    <appender name="zk-cli" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${dubbo.log.root}/zk-cli.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d %p [%t] %c{20} - %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${dubbo.log.root}/zk-cli.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="org.apache.zookeeper" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="zk-cli"/>
+    </logger>
+    <logger name="org.I0Itec.zkclient" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="zk-cli"/>
+    </logger>
+    <logger name="com.netflix.curator.framework" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="zk-cli"/>
+    </logger>
+
+    <appender name="dubbo" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${dubbo.log.root}/dubbo.log</File>
+        <append>true</append>
+        <encoder>
+            <pattern>%d %p [%t] %c{2} %X{traceId:--} %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${dubbo.log.root}/dubbo.log.%d{yyyy-MM-dd}
+            </fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.wrapper.dubbo.common.utils.DubboLogger" additivity="false">
+        <level value="warn"/>
+        <appender-ref ref="dubbo"/>
+    </logger>
+
+<!--
+
+    <appender name="dubbo-perf-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${dubbo.log.root}/dubbo-perf.log</File>
+        <append>true</append>
+        <encoder>
+            <pattern>%d %p [%t] %c{20} - %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${dubbo.log.root}/dubbo-perf.log.%d{yyyy-MM-dd}
+            </fileNamePattern>
+            <maxHistory>2</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>10240</queueSize>
+        <appender-ref ref="dubbo-perf-appender"/>
+    </appender>
+
+    <logger name="dubboPerfLogger" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="ASYNC_FILE"/>
+    </logger>
+-->
+
+</configuration>

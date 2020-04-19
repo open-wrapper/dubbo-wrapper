@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="warn">
+
+    <appenders>
+
+        <RollingFile name="statistics-appender" fileName="${sys:dubbo.log.root}/statistics.log"
+                     filePattern="${sys:dubbo.log.root}/statistics.log.%d{yyyy-MM-dd}-%i">
+            <Filters>
+                <ThresholdFilter level="info"/>
+            </Filters>
+            <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss:SSS} %p [%t] %c{1} %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="400 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="3"/>
+        </RollingFile>
+
+    </appenders>
+
+    <loggers>
+        <logger name="com.wrapper.dubbo.statistics.StatisticsLogger" level="info" additivity="false">
+            <appender-ref ref="statistics-appender"/>
+        </logger>
+
+    </loggers>
+
+</configuration>

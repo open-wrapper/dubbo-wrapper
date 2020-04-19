@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+    <appender name="dubbo" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="${dubbo.log.root}/dubbo.log"/>
+        <param name="append" value="true"/>
+        <param name="encoding" value="UTF-8"/>
+        <param name="maxFileSize" value="1073741824"/>
+        <param name="maxBackupIndex" value="7"/>
+        <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+            <param name="FileNamePattern" value="${dubbo.log.root}/dubbo.log.%d{yyyy-MM-dd-HH}"/>
+        </rollingPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %p [%t] %c{2} %X{traceId:--} - %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="com.wrapper.dubbo.common.utils.DubboLogger" additivity="false">
+        <level value="warn"/>
+        <appender-ref ref="dubbo"/>
+    </logger>
+
+
+    <appender name="zk-cli-appender" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="${dubbo.log.root}/zk-cki.log"/>
+        <param name="append" value="true"/>
+        <param name="encoding" value="UTF-8"/>
+        <param name="maxFileSize" value="1073741824"/>
+        <param name="maxBackupIndex" value="7"/>
+        <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+            <param name="FileNamePattern" value="${dubbo.log.root}/zk-cki.%d{yyyy-MM-dd-HH}"/>
+        </rollingPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %p [%t] %c{20} - %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="org.apache.zookeeper" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="zk-cli-appender"/>
+    </logger>
+    <logger name="org.I0Itec.zkclient" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="zk-cli-appender"/>
+    </logger>
+    <logger name="com.netflix.curator.framework" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="zk-cli-appender"/>
+    </logger>
+
+
+</log4j:configuration>

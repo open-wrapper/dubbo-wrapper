@@ -4,12 +4,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.support.FailoverClusterInvoker;
 
 public class SmartCluster implements Cluster {
-    public final static String NAME = "smart";
 
+    //用户显示桩点
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new SmartClusterInvoker<T>(directory);
+        return new FailoverClusterInvoker<>(directory);
     }
 }

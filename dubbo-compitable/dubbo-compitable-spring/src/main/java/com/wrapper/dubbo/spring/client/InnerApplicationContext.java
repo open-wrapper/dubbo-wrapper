@@ -25,6 +25,9 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 
+/**
+ * 兼容容器中获得历史bean
+ */
 public class InnerApplicationContext implements ApplicationContext {
 
     private ApplicationContext applicationContext;

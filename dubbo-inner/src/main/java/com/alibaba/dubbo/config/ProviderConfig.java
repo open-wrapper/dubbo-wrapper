@@ -17,7 +17,6 @@
 
 package com.alibaba.dubbo.config;
 
-import java.util.List;
 
 @Deprecated
 public class ProviderConfig extends org.apache.dubbo.config.ProviderConfig {

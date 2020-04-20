@@ -1,1 +1,0 @@
-noop=com.wrapper.dubbo.rpc.cluster.feedback.NoopFeedback

@@ -15,56 +15,20 @@
  */
 package com.wrapper.dubbo.statistics.filter;
 
-import com.wrapper.dubbo.statistics.StatsUtil;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
 
-import static com.wrapper.dubbo.common.CommonConstants.WD_BIZ_TIME;
 
-/**
- * 目前只支持同步调用，为改成异步调用，符合现在的dubbo调用情况，全部是同步调用
- */
 @Activate(group = {CommonConstants.CONSUMER, CommonConstants.PROVIDER})
 public class StatisticsFilter implements Filter {
 
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        final long start = System.currentTimeMillis();
-        long bizTime = 0;
-        boolean hasException = false;
-        try {
-            Result result = invoker.invoke(invocation);
-            if (result != null) {
-                bizTime = toLong(result.getAttachment(WD_BIZ_TIME));
-                hasException = result.hasException();
-            }
-            return result;
-        } finally {
-            final long end = System.currentTimeMillis();
-
-            StatsUtil.statistic(
-                    invoker.getUrl().getParameter(CommonConstants.SIDE_KEY),
-                    invoker.getUrl().getParameter(CommonConstants.APPLICATION_KEY),
-                    getInterfaceName(invoker, invocation),
-                    end - start,
-                    bizTime,
-                    hasException
-            );
-        }
+        //显示一个例子
+        return invoker.invoke(invocation);
     }
 
-    private long toLong(String value) {
-        try {
-            return value == null ? 0 : Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    private String getInterfaceName(Invoker<?> invoker, Invocation invocation) {
-        return invoker.getUrl().getServiceInterface() + ":" + invoker.getUrl().getParameter(CommonConstants.VERSION_KEY) + "." + invocation.getMethodName();
-    }
 
 }

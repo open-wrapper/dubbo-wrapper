@@ -6,6 +6,21 @@
 
 理论上你可以利用该模板，对dubbo做任何定制化的开发，无论是硬编码还是SPI扩展。
 
+## 使用
+
+1. 下载源码
+2. 编译执行 
+        
+        mvn clean install -Dmaven.test.skip=true -Dmaven.javaDoc.skip=true
+
+3. 使用依赖
+
+            <dependency>
+                <groupId>com.wrapper.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>2.7.4-SNAPSHOT</version>
+             </dependency>
+
 ## 优势
 
 1. 便捷的追踪开源代码方式

@@ -8,12 +8,11 @@
 
 ## 使用
 
-1. 下载源码
-2. 编译执行 
+1. 下载源码,编译执行 
         
         mvn clean install -Dmaven.test.skip=true -Dmaven.javaDoc.skip=true
 
-3. 使用依赖
+2. 使用依赖
 
             <dependency>
                 <groupId>com.wrapper.dubbo</groupId>
@@ -37,20 +36,24 @@
 ## 模块介绍
 
 1. dubbo
-    - 打包实现
-2. dubbo-cluster（示例）
-    1. 集群实现
-3. dubbo-common（示例）
+    - 最终的打包jar
+2. dubbo-cluster
+    1. 简单的定义一个集群也就是cluster的实现，来指导读者在dubbo框架中自定义cluster
+3. dubbo-common
     1. 放置一些公共类
 4. dubbo-compitable
-    1. dubbo-compitable-spring（兼容spring示例）
-    2. dubbo-compitable-zk（兼容zk示例）
+    1. dubbo-compitable-spring
+        1. 用于构建一层适配转换如果你在容器中获得是org.apache的dubbo的bean
+    2. dubbo-compitable-zk
+        1. 用于兼容如果业务显示的使用了dubbo框架中的api去操作zk的
 5. dubbo-exchanger
-    1. dubbo-exchanger-version(一个更改version版本的示例)
+    1. dubbo-exchanger-version
+        1. 用于更改由Request-Response模型下的的dubbo的version的问题
 6. dubbo-filter
-    1. dubbo-filter-statistics(一个示例)
+    1. dubbo-filter-statistics
+        1. 简单的定义一个Filter实现，来指导读者在dubbo框架中自定义Filter。
 7. dubbo-inner
-    - 核心的魔改代码（示例）
+    - 核心的魔改代码，提供了一些dubbo框架兼容性不好的类，以及一些被删除的类，但是业务方可能会使用
 
 ### dubbo-inner
 

@@ -42,14 +42,9 @@
         <dubbo.version>2.7.4.1</dubbo.version>
     </properties>
     <modules>
-        <module>dubbo-filter</module>
-        <module>dubbo-cluster</module>
         <module>dubbo-common</module>
         <module>dubbo-inner</module>
-        <module>dubbo-exchanger</module>
         <module>dubbo</module>
-
-        <module>dubbo-compitable</module>
     </modules>
 
     <dependencyManagement>

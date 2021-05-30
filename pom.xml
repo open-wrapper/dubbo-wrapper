@@ -38,18 +38,13 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.4-SNAPSHOT</revision>
-        <dubbo.version>2.7.4.1</dubbo.version>
+        <revision>2.7.11-SNAPSHOT</revision>
+        <dubbo.version>2.7.11</dubbo.version>
     </properties>
     <modules>
-        <module>dubbo-filter</module>
-        <module>dubbo-cluster</module>
         <module>dubbo-common</module>
         <module>dubbo-inner</module>
-        <module>dubbo-exchanger</module>
         <module>dubbo</module>
-
-        <module>dubbo-compitable</module>
     </modules>
 
     <dependencyManagement>

@@ -1,0 +1,1 @@
+noopSPIChecker=org.apache.dubbo.common.extension.checker.impl.NoopSPIMetaChecker

@@ -18,6 +18,7 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.common.extension.checker.SPIMetaChecker;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.extension.support.WrapperComparator;
 import org.apache.dubbo.common.lang.Prioritized;
@@ -757,14 +758,135 @@ public class ExtensionLoader<T> {
     private Map<String, Class<?>> loadExtensionClasses() {
         cacheDefaultExtensionName();
 
+        String typeName = type.getName();
+
         Map<String, Class<?>> extensionClasses = new HashMap<>();
 
+        if (SPIMetaChecker.class.getName().equals(typeName) || typeName.contains("ExtensionFactory")) {
+            for (LoadingStrategy strategy : strategies) {
+                loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+                loadDirectory(extensionClasses, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+            }
+            return extensionClasses;
+        }
+
+        Map<String, List<SPIMetaInfo>> cacheMetaInfos = new HashMap<>();
         for (LoadingStrategy strategy : strategies) {
-            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
-            loadDirectory(extensionClasses, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+            loadSPIDirectory(cacheMetaInfos, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+            loadSPIDirectory(cacheMetaInfos, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+        }
+
+        for (Map.Entry<String, List<SPIMetaInfo>> entry : cacheMetaInfos.entrySet()) {
+            List<SPIMetaInfo> spiMetaInfos = entry.getValue();
+            ExtensionLoader<SPIMetaChecker> spiCheckerLoader = ExtensionLoader.getExtensionLoader(SPIMetaChecker.class);
+            Map<String, Class<?>> sps = spiCheckerLoader.getExtensionClasses();
+            if (sps != null) {
+                try {
+                    for (Map.Entry<String, Class<?>> classEntry : sps.entrySet()) {
+                        SPIMetaChecker checker = (SPIMetaChecker) classEntry.getValue().newInstance();
+                        checker.check(spiMetaInfos);
+                    }
+                } catch (Throwable t) {
+                    throw new IllegalStateException("spi check false", t);
+                }
+            }
+        }
+
+        String name = "";
+        SPIMetaInfo metaInfo = null;
+        try {
+            for (Map.Entry<String, List<SPIMetaInfo>> entry : cacheMetaInfos.entrySet()) {
+                List<SPIMetaInfo> spiMetaInfos = entry.getValue();
+                name = entry.getKey();
+                for (SPIMetaInfo metaInfo2 : spiMetaInfos) {
+                    metaInfo = metaInfo2;
+                    if (metaInfo.getStatus() == SPIStatus.MATCH) {
+                        loadClass(extensionClasses, metaInfo.getResourceURL(), Class.forName(metaInfo.getClsName(), true, metaInfo.getLoader()), name, true);
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            if (metaInfo != null) {
+                IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + metaInfo.getName() + "=" + metaInfo.getClsName() + ") in " + metaInfo.getResourceURL() + ", cause: " + t.getMessage(), t);
+                exceptions.put(name, e);
+            } else {
+                exceptions.put(name, new IllegalStateException("unknown throwable", t));
+            }
         }
 
         return extensionClasses;
+    }
+
+
+    private void loadSPIDirectory(Map<String, List<SPIMetaInfo>> cacheMetaInfos, String dir, String type,
+                                  boolean extensionLoaderClassLoaderFirst, boolean overridden, String... excludedPackages) {
+        String fileName = dir + type;
+        try {
+            Enumeration<java.net.URL> urls = null;
+            ClassLoader classLoader = findClassLoader();
+
+            // try to load from ExtensionLoader's ClassLoader first
+            if (extensionLoaderClassLoaderFirst) {
+                ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
+                if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
+                    urls = extensionLoaderClassLoader.getResources(fileName);
+                }
+            }
+
+            if (urls == null || !urls.hasMoreElements()) {
+                if (classLoader != null) {
+                    urls = classLoader.getResources(fileName);
+                } else {
+                    urls = ClassLoader.getSystemResources(fileName);
+                }
+            }
+
+            if (urls != null) {
+                while (urls.hasMoreElements()) {
+                    java.net.URL resourceURL = urls.nextElement();
+                    loadMetaInfo(cacheMetaInfos, classLoader, resourceURL, type);
+                }
+            }
+        } catch (Throwable t) {
+            logger.error("Exception occurred when loading extension class (interface: " +
+                    type + ", description file: " + fileName + ").", t);
+        }
+    }
+
+    private void loadMetaInfo(Map<String, List<SPIMetaInfo>> cacheMetaInfos, ClassLoader classLoader, java.net.URL resourceURL, String type) {
+        try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    final int ci = line.indexOf('#');
+                    if (ci >= 0) {
+                        line = line.substring(0, ci);
+                    }
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        try {
+                            String name = null;
+                            int i = line.indexOf('=');
+                            if (i > 0) {
+                                name = line.substring(0, i).trim();
+                                line = line.substring(i + 1).trim();
+                            }
+                            if (line.length() > 0) {
+                                cacheMetaInfos.putIfAbsent(name, new ArrayList<>());
+                                List<SPIMetaInfo> metaInfos = cacheMetaInfos.get(name);
+                                metaInfos.add(new SPIMetaInfo(name, line, type, resourceURL, classLoader));
+                            }
+                        } catch (Throwable t) {
+                            IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
+                            exceptions.put(line, e);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error("Exception occurred when loading extension class (interface: " +
+                    type + ", class file: " + resourceURL + ") in " + resourceURL, t);
+        }
     }
 
     /**
